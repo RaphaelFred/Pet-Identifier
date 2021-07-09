@@ -1,0 +1,81 @@
+---
+title: "Benchmark Model"
+output: html_document
+---
+
+```{r}
+reticulate::use_condaenv("tf-gpu", required = TRUE)
+require(keras)
+```
+
+```{r Data preprocessing}
+train_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_small/train")
+validation_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_small/validation")
+
+train_datagen <- image_data_generator(rescale = 1/255,
+                                      width_shift_range=0.1,
+                                      height_shift_range=0.1,
+                                      horizontal_flip=TRUE )
+validation_datagen <- image_data_generator(rescale = 1/255)
+
+train_generator <- flow_images_from_directory(
+  train_dir,
+  train_datagen, target_size = c(200, 200),
+  batch_size = 20,
+  class_mode = "binary"
+)
+
+validation_generator <- flow_images_from_directory(
+  validation_dir,
+  validation_datagen, target_size = c(200, 200),
+  batch_size = 20,
+  class_mode = "binary"
+)
+```
+### VGG 4-Block architecture
+
+```{r}
+model <- keras_model_sequential() %>%
+  layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu", input_shape = c(200, 200, 3)) %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_dropout(rate = 0.2) %>%
+  layer_conv_2d(filters = 128, kernel_size = c(3, 3), activation = "relu") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_flatten() %>%
+  layer_dense(units = 512, activation = "relu") %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+summary(model)
+```
+
+```{r}
+model %>% compile(
+  loss= "binary_crossentropy",
+  optimizer = optimizer_adam(lr = 1e-4),
+  metrics = c("acc")
+)
+```
+
+```{r}
+history <- model %>% fit_generator(
+  train_generator,
+  steps_per_epoch = 100,
+  epochs = 100,
+  validation_data = validation_generator,
+  validation_steps = 50
+)
+
+```
+
+
+```{r}
+model %>% save_model_hdf5("classif_benchmark_vgg4.h5")
+```
+
+

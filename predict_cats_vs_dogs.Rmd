@@ -9,7 +9,7 @@ library(keras)
 
 ```{r}
 # Model name
-mod_name <- "cats_and_dogs_small_1_full.h5"
+mod_name <- "classif_benchmark_vgg4.h5"
 img_path <- "C:/Users/FRED031/Downloads/chewie1.jpg"
 ```
 
@@ -20,10 +20,10 @@ model <- load_model_hdf5(paste0("models/", mod_name))
 
 
 ```{r}
-img <- image_load(img_path, target_size = c(150, 150))
+img <- image_load(img_path, target_size = c(200, 200))
 
 img_array <- image_to_array(img)
-img_array <- array_reshape(img_array, c(1, 150, 150, 3))
+img_array <- array_reshape(img_array, c(1, 200, 200, 3))
 
 pred_generator <- flow_images_from_data(
   img_array,
