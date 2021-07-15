@@ -1,0 +1,105 @@
+---
+title: "Transfer Learning with VGG-16 Model"
+output: html_document
+---
+
+
+```{r}
+reticulate::use_condaenv("tf-gpu", required = TRUE)
+require(keras)
+```
+
+```{r}
+pretrained_model <- "VGG16"
+shape <- c(150, 150, 3)
+```
+
+
+```{r Data preprocessing}
+
+train_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_full/train")
+validation_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_full/validation")
+
+train_datagen <- image_data_generator(rescale = 1/255,
+                                      rotation_range = 40,
+                                      width_shift_range=0.1,
+                                      height_shift_range=0.1,
+                                      shear_range = 0.2,
+                                      zoom_range = 0.2,
+                                      horizontal_flip=TRUE,
+                                      fill_mode = "nearest")
+validation_datagen <- image_data_generator(rescale = 1/255)
+
+train_generator <- flow_images_from_directory(
+  train_dir,
+  train_datagen, target_size = c(shape[1], shape[2]),
+  batch_size = 20,
+  class_mode = "binary"
+)
+
+validation_generator <- flow_images_from_directory(
+  validation_dir,
+  validation_datagen, target_size = c(shape[1], shape[2]),
+  batch_size = 20,
+  class_mode = "binary"
+)
+```
+
+```{r}
+if (pretrained_model == "VGG16") {
+  conv_base <- application_vgg16(
+  weights = "imagenet",
+  include_top = FALSE,
+  input_shape = shape 
+)
+} else if (pretrained_model == "VGG16") {
+  conv_base <- application_vgg16(
+  weights = "imagenet",
+  include_top = FALSE,
+  input_shape = shape 
+)
+} else if (pretrained_model == "MobileNet") {
+  conv_base <- application_mobilenet(
+  weights = "imagenet",
+  include_top = FALSE,
+  input_shape = shape 
+  )
+
+}
+
+```
+
+```{r}
+model <- keras_model_sequential() %>%
+  conv_base %>%
+  layer_flatten() %>%
+  layer_dense(units = 256, activation = "relu") %>%
+  #layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 1, activation = "sigmoid")
+
+
+freeze_weights(conv_base)
+```
+
+```{r}
+model %>% compile(
+  optimizer = optimizer_rmsprop(lr = 1e-5),
+  loss = "binary_crossentropy",
+  metrics = c("accuracy")
+)
+```
+
+```{r}
+history <- model %>% fit_generator(
+  train_generator,
+  steps_per_epoch = 100,
+  epochs = 50,
+  validation_data = validation_generator,
+  validation_steps = 50
+)
+```
+
+```{r}
+model %>% save_model_hdf5(paste0("classif_transferlearning_", pretrained_model, ".h5"))
+```
+

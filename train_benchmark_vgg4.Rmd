@@ -9,8 +9,8 @@ require(keras)
 ```
 
 ```{r Data preprocessing}
-train_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_small/train")
-validation_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_small/validation")
+train_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_full/train")
+validation_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_full/validation")
 
 train_datagen <- image_data_generator(rescale = 1/255,
                                       width_shift_range=0.1,
@@ -20,14 +20,14 @@ validation_datagen <- image_data_generator(rescale = 1/255)
 
 train_generator <- flow_images_from_directory(
   train_dir,
-  train_datagen, target_size = c(200, 200),
+  train_datagen, target_size = c(224, 224),
   batch_size = 20,
   class_mode = "binary"
 )
 
 validation_generator <- flow_images_from_directory(
   validation_dir,
-  validation_datagen, target_size = c(200, 200),
+  validation_datagen, target_size = c(224, 224),
   batch_size = 20,
   class_mode = "binary"
 )
@@ -36,7 +36,7 @@ validation_generator <- flow_images_from_directory(
 
 ```{r}
 model <- keras_model_sequential() %>%
-  layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu", input_shape = c(200, 200, 3)) %>%
+  layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu", input_shape = c(224, 224, 3)) %>%
   layer_max_pooling_2d(pool_size = c(2, 2)) %>%
   layer_dropout(rate = 0.2) %>%
   layer_conv_2d(filters = 64, kernel_size = c(3, 3), activation = "relu") %>%

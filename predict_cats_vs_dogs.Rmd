@@ -9,8 +9,8 @@ library(keras)
 
 ```{r}
 # Model name
-mod_name <- "classif_benchmark_vgg4.h5"
-img_path <- "C:/Users/FRED031/Downloads/chewie1.jpg"
+mod_name <- "classif_transferlearning_MobileNet.h5"
+img_path <- "C:/Users/FRED031/Downloads/lisha1.jpg"
 ```
 
 
@@ -20,10 +20,10 @@ model <- load_model_hdf5(paste0("models/", mod_name))
 
 
 ```{r}
-img <- image_load(img_path, target_size = c(200, 200))
+img <- image_load(img_path, target_size = c(224, 224))
 
 img_array <- image_to_array(img)
-img_array <- array_reshape(img_array, c(1, 200, 200, 3))
+img_array <- array_reshape(img_array, c(1, 224, 224, 3))
 
 pred_generator <- flow_images_from_data(
   img_array,
