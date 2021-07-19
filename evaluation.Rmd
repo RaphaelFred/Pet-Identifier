@@ -12,16 +12,19 @@ require(keras)
 ```{r}
 test_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_full/test")
 benchmark_model_name <- "classif_benchmark_vgg4.h5"
-vgg16_name <- "classif_transferlearning_vgg16.h5"
+#vgg16_name <- "classif_transferlearning_VGG16.h5"
 vgg19_name <- "classif_transferlearning_vgg19.h5"
 mobilenet_name <- "classif_transferlearning_MobileNet.h5"
+resnet50_name <- "classif_transferlearning_ResNet50.h5"
+xception_name <- "classif_transferlearning_Xception.h5"
 ```
 
 ```{r}
 benchmark_model <- load_model_hdf5(paste0("models/", benchmark_model_name))
-vgg16_model <- load_model_hdf5(paste0("models/", vgg16_name))
+#vgg16_model <- load_model_hdf5(paste0("models/", vgg16_name))
 vgg19_model <- load_model_hdf5(paste0("models/", vgg19_name))
 mobilenet_model <- load_model_hdf5(paste0("models/", mobilenet_name))
+resnet50_model <- load_model_hdf5(paste0("models/", resnet50_name))
 ```
 
 ```{r}
@@ -37,14 +40,21 @@ test_generator <- flow_images_from_directory(
 
 ```{r}
 benchmark_evaluation <- benchmark_model %>% evaluate_generator(test_generator, steps = 50)
-vgg16_evaluation <- vgg16_model %>% evaluate_generator(test_generator, steps = 50)
+#vgg16_evaluation <- vgg16_model %>% evaluate_generator(test_generator, steps = 50)
 vgg19_evaluation <- vgg19_model %>% evaluate_generator(test_generator, steps = 50)
 mobilenet_evaluation <- mobilenet_model %>% evaluate_generator(test_generator, steps = 50)
+resnet50_evaluation <- resnet50_model %>% evaluate_generator(test_generator, steps = 50)
 ```
 
 ```{r}
-model <- c("Benchmark", "VGG16", "VGG19", "MobileNet")
-accuracy <- c(benchmark_evaluation$acc, vgg16_evaluation$acc, vgg19_evaluation$acc, mobilenet_evaluation$acc)
+model <- c("Benchmark",
+           #"VGG16",
+           "VGG19", "MobileNet", "ResNet50")
+accuracy <- c(benchmark_evaluation$acc,
+              #vgg16_evaluation$acc,
+              vgg19_evaluation$acc,
+              mobilenet_evaluation$acc,
+              resnet50_evaluation$acc)
 data.frame(model, accuracy)
 ```
 

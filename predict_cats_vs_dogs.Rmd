@@ -9,8 +9,8 @@ library(keras)
 
 ```{r}
 # Model name
-mod_name <- "classif_transferlearning_MobileNet.h5"
-img_path <- "C:/Users/FRED031/Downloads/lisha1.jpg"
+mod_name <- "classif_transferlearning_Xception.h5"
+img_path <- "C:/Users/FRED031/Downloads/chewie1.jpg"
 ```
 
 

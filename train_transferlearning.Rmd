@@ -10,8 +10,8 @@ require(keras)
 ```
 
 ```{r}
-pretrained_model <- "VGG16"
-shape <- c(150, 150, 3)
+pretrained_model <- "Xception"
+shape <- c(224, 224, 3)
 ```
 
 
@@ -64,9 +64,19 @@ if (pretrained_model == "VGG16") {
   include_top = FALSE,
   input_shape = shape 
   )
-
+} else if (pretrained_model == "ResNet50") {
+  conv_base <- application_resnet50(
+  weights = "imagenet",
+  include_top = FALSE,
+  input_shape = shape 
+  )
+} else if (pretrained_model == "Xception") {
+  conv_base <- application_xception(
+  weights = "imagenet",
+  include_top = FALSE,
+  input_shape = shape 
+  )
 }
-
 ```
 
 ```{r}
@@ -74,7 +84,7 @@ model <- keras_model_sequential() %>%
   conv_base %>%
   layer_flatten() %>%
   layer_dense(units = 256, activation = "relu") %>%
-  #layer_dropout(rate = 0.5) %>%
+  layer_dropout(rate = 0.5) %>%
   layer_dense(units = 1, activation = "sigmoid")
 
 
