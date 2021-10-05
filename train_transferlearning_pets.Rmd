@@ -1,0 +1,84 @@
+---
+title: "Transfer Learning with VGG-16 Model"
+output: html_document
+---
+
+
+```{r}
+reticulate::use_condaenv("tf-gpu", required = TRUE)
+require(keras)
+```
+
+```{r}
+mod_name <- "classif_transferlearning_vgg16.h5"
+shape <- c(150, 150, 3)
+```
+
+
+```{r Data preprocessing}
+
+train_dir <- paste0(here::here(), "/ahlen_pets/train")
+#validation_dir <- paste0(here::here(), "/cats_and_dogs/cats_and_dogs_full/validation")
+
+train_datagen <- image_data_generator(rescale = 1/255,
+                                      rotation_range = 40,
+                                      width_shift_range=0.1,
+                                      height_shift_range=0.1,
+                                      shear_range = 0.2,
+                                      zoom_range = 0.2,
+                                      horizontal_flip=TRUE,
+                                      fill_mode = "nearest")
+#validation_datagen <- image_data_generator(rescale = 1/255)
+
+train_generator <- flow_images_from_directory(
+  train_dir,
+  train_datagen, target_size = c(shape[1], shape[2]),
+  batch_size = 20,
+  class_mode = "binary"
+)
+
+# #validation_generator <- flow_images_from_directory(
+#   validation_dir,
+#   validation_datagen, target_size = c(shape[1], shape[2]),
+#   batch_size = 20,
+#   class_mode = "binary"
+# )
+```
+
+```{r}
+model <- load_model_hdf5(paste0("models/", mod_name))
+conv_base <- model
+```
+
+```{r}
+model <- keras_model_sequential() %>%
+  conv_base %>%
+  layer_flatten() %>%
+  layer_dense(units = 256, activation = "relu") %>%
+  layer_dropout(rate = 0.5) %>%
+  layer_dense(units = 3, activation = "softmax")
+
+
+freeze_weights(conv_base)
+```
+
+```{r}
+model %>% compile(
+  optimizer = optimizer_rmsprop(lr = 1e-5),
+  loss = "categorical_crossentropy",
+  metrics = c("accuracy")
+)
+```
+
+```{r}
+history <- model %>% fit_generator(
+  train_generator,
+  steps_per_epoch = 100,
+  epochs = 50
+)
+```
+
+```{r}
+model %>% save_model_hdf5(paste0("pet_classif_transferlearning_", model, ".h5"))
+```
+
