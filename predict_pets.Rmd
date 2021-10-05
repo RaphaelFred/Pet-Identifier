@@ -1,0 +1,65 @@
+---
+title: "Cats vs. Dogs Prediction Script"
+output: rmarkdown
+---
+```{r}
+library(keras)
+```
+
+
+```{r}
+# Model name
+mod_name <- "pet_classif_transferlearning_MobileNet.h5"
+img_path <- "C:/Users/FRED031/Downloads/lisha2.jpg"
+```
+
+
+```{r}
+model <- load_model_hdf5(paste0("models/", mod_name))
+```
+```{r}
+labels <- c("chewie", "lisha", "luke")
+```
+
+
+```{r}
+img <- image_load(img_path, target_size = c(224, 224))
+
+img_array <- image_to_array(img)
+img_array <- array_reshape(img_array, c(1, 224, 224, 3))
+
+pred_generator <- flow_images_from_data(
+  img_array,
+  generator = image_data_generator(rescale=1/255),
+  batch_size = 1
+)
+
+
+pred <- model %>%
+  predict_generator(generator = pred_generator,
+          steps = 1)
+pred <-labels[which.max(pred[1,])]
+# if (pred[1, 1] > 0.5) {
+#   pred <- "Hey, it's a dog!"
+# } else {
+pred <- paste0("Hey, it's ", pred)
+
+plot(as.raster(img_array[1,,,]/255), main = "asd")
+
+plot_jpeg = function(path, add=FALSE, main)
+{
+  require('jpeg')
+  jpg = readJPEG(path, native=T) # read the file
+  res = dim(jpg)[2:1] # get the resolution, [x, y]
+  if (!add) # initialize an empty plot area if add==FALSE
+    plot(1,1,xlim=c(1,res[1]),ylim=c(1,res[2]),asp=1,type='n',main = main, xaxs='i',yaxs='i',xaxt='n',yaxt='n',ylab='',bty='n')
+  rasterImage(jpg,1,1,res[1],res[2])
+}
+plot_jpeg(img_path, main = pred)
+```
+
+```{r}
+which.max(pred[1,])
+```
+
+
